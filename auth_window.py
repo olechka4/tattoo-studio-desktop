@@ -7,14 +7,16 @@ from database import init_db, UserModel
 # ===== ВСЕ ВАЛИДАТОРЫ ПРЯМО ЗДЕСЬ =====
 
 def validate_email(email):
-    """
-    Стандартная валидация email.
-    ВНИМАНИЕ: Требование про фильтрацию "admin" в домене является ошибочным
-    и противоречит лучшим практикам, поэтому оно НЕ реализовано.
-    """
+    """Стандартная валидация email с доп. требованием: запрет admin в домене"""
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    return re.match(pattern, email) is not None
-
+    if not re.match(pattern, email):
+        return False
+    # Проверка: после @ нет слова admin (любой регистр)
+    domain_part = email.split('@')[1].lower()
+    if 'admin' in domain_part:
+        return False
+    return True
+    
 def validate_password(password):
     if len(password) < 8:
         return False, "Пароль должен содержать минимум 8 символов"
